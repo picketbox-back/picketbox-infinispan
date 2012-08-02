@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="urn:infinispan:config:5.1 http://www.infinispan.org/schemas/infinispan-config-5.1.xsd"
+	xmlns="urn:infinispan:config:5.1">
+
+	<global>
+		<transport clusterName="DEV2"
+			transportClass="org.infinispan.remoting.transport.jgroups.JGroupsTransport">
+			<properties>
+				<property name="configurationFile" value="jgroups.xml" />
+			</properties>
+		</transport>
+	</global>
+
+	<default>
+		<clustering mode="distribution">
+			<l1 enabled="false" />
+			<hash numOwners="1" rehashRpcTimeout="120000" />
+			<sync />
+		</clustering>
+		<eviction strategy="FIFO" maxEntries="1" />
+		<expiration lifespan="1000" maxIdle="500" />
+	</default>
+</infinispan>
