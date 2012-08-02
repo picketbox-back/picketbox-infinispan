@@ -21,38 +21,22 @@
  */
 package org.picketbox.infinispan.session;
 
-import org.infinispan.Cache;
-import org.picketbox.core.session.PicketBoxSession;
+import org.infinispan.notifications.Listener;
+import org.infinispan.notifications.cachelistener.annotation.CacheEntryInvalidated;
+import org.infinispan.notifications.cachelistener.event.CacheEntryInvalidatedEvent;
 
 /**
- * Instance of {@link PicketBoxSession} that internally uses an Infinispan Cache
+ * Listens on the Infinispan Cache events. Primary use is to detect when the cache entry is invalidated.
  *
  * @author anil saldhana
  * @since Aug 2, 2012
  */
-public class PicketBoxInfinispanSession extends PicketBoxSession {
+@Listener
+public class CacheListener {
 
-    public static final String CONFIG_FILE = "picketbox-infinispan.xml";
-
-    protected Cache<Object, Object> cache = null;
-
-    protected PicketBoxInfinispanSession() {
-        super();
-    }
-
-    /**
-     * Set the Cache
-     *
-     * @param theCache
-     */
-    public void setCache(Cache<Object, Object> theCache) {
-        cache = theCache;
-        cache.put(id, this);
-    }
-
-    @Override
-    public void invalidate() {
-        super.invalidate();
-        cache.evict(id);
+    @CacheEntryInvalidated
+    public void observeInvalidated(CacheEntryInvalidatedEvent<?, ?> event) {
+        PicketBoxInfinispanSession session = (PicketBoxInfinispanSession) event.getValue();
+        session.invalidate();
     }
 }
