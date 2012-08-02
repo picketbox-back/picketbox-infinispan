@@ -21,8 +21,14 @@
  */
 package org.picketbox.infinispan.session;
 
+import java.io.IOException;
+
+import org.infinispan.Cache;
+import org.infinispan.manager.DefaultCacheManager;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.picketbox.core.session.PicketBoxSession;
 import org.picketbox.core.session.PicketBoxSessionCreator;
+import org.picketbox.infinispan.PicketBoxInfinispanMessages;
 
 /**
  * An instance of {@link PicketBoxSessionCreator} that creates Infinispan enabled sessions
@@ -31,9 +37,24 @@ import org.picketbox.core.session.PicketBoxSessionCreator;
  * @since Aug 2, 2012
  */
 public class PicketBoxInfinispanSessionCreator implements PicketBoxSessionCreator {
+    public static final String CONFIG_FILE = "picketbox-infinispan.xml";
+
+    protected Cache<Object, Object> cache = null;
+
+    public PicketBoxInfinispanSessionCreator() {
+        try {
+            EmbeddedCacheManager manager = new DefaultCacheManager(CONFIG_FILE);
+            cache = manager.getCache();
+            cache.addListener(new CacheListener());
+        } catch (IOException e) {
+            throw PicketBoxInfinispanMessages.MESSAGES.runtimeException(e);
+        }
+    }
+
     @Override
     public PicketBoxSession create() {
         PicketBoxInfinispanSession session = new PicketBoxInfinispanSession();
+        session.setCache(cache);
         return session;
     }
 }
