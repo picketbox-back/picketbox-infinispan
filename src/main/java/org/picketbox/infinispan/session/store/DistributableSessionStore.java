@@ -26,6 +26,7 @@ import java.io.Serializable;
 
 import org.infinispan.Cache;
 import org.infinispan.manager.DefaultCacheManager;
+import org.picketbox.core.AbstractPicketBoxLifeCycle;
 import org.picketbox.core.session.PicketBoxSession;
 import org.picketbox.core.session.SessionId;
 import org.picketbox.core.session.SessionStore;
@@ -38,11 +39,14 @@ import org.picketbox.infinispan.session.CacheListener;
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  *
  */
-public class DistributableSessionStore implements SessionStore {
+public class DistributableSessionStore extends AbstractPicketBoxLifeCycle implements SessionStore {
 
     private static final String DEFAULT_CONFIG_FILE = "picketbox-ispn.xml";
 
     private Cache<Serializable, PicketBoxSession> cache;
+    private String configurationFile = DEFAULT_CONFIG_FILE;
+
+    private DefaultCacheManager cacheManager;
 
     /**
      * <p>Creates a new instance using the default configuration file: picketbox-ispn.xml.</p>
@@ -57,7 +61,7 @@ public class DistributableSessionStore implements SessionStore {
      * @param configurationFile
      */
     public DistributableSessionStore(String configurationFile) {
-        startCache(configurationFile);
+        this.configurationFile = configurationFile;
     }
 
     /**
@@ -67,7 +71,7 @@ public class DistributableSessionStore implements SessionStore {
      */
     private void startCache(String configurationFile) {
         try {
-            DefaultCacheManager cacheManager = new DefaultCacheManager(configurationFile);
+            this.cacheManager = new DefaultCacheManager(configurationFile);
 
             cacheManager.start();
 
@@ -109,6 +113,16 @@ public class DistributableSessionStore implements SessionStore {
     @Override
     public void update(PicketBoxSession session) {
         this.cache.put(session.getId().getId(), session);
+    }
+
+    @Override
+    protected void doStart() {
+        startCache(this.configurationFile);
+    }
+
+    @Override
+    protected void doStop() {
+        this.cacheManager.stop();
     }
 
 }

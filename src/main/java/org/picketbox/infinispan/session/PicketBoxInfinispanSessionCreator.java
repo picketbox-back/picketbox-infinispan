@@ -24,7 +24,6 @@ package org.picketbox.infinispan.session;
 import java.io.IOException;
 
 import org.infinispan.Cache;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.picketbox.core.session.PicketBoxSession;
