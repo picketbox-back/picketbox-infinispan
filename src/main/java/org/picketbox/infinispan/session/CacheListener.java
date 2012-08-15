@@ -21,9 +21,16 @@
  */
 package org.picketbox.infinispan.session;
 
+import java.io.Serializable;
+
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryInvalidated;
+import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
 import org.infinispan.notifications.cachelistener.event.CacheEntryInvalidatedEvent;
+import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
+import org.picketbox.core.exceptions.PicketBoxSessionException;
+import org.picketbox.core.session.PicketBoxSession;
+import org.picketbox.core.session.SessionId;
 
 /**
  * Listens on the Infinispan Cache events. Primary use is to detect when the cache entry is invalidated.
@@ -35,8 +42,29 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryInvalidatedEve
 public class CacheListener {
 
     @CacheEntryInvalidated
-    public void observeInvalidated(CacheEntryInvalidatedEvent<?, ?> event) {
-        PicketBoxInfinispanSession session = (PicketBoxInfinispanSession) event.getValue();
-        session.invalidate();
+    public void observeInvalidated(CacheEntryInvalidatedEvent<SessionId<? extends Serializable>, PicketBoxSession> event) {
+        PicketBoxSession session = event.getValue();
+
+        if (session != null && session.isValid()) {
+            try {
+                session.invalidate(false);
+            } catch (PicketBoxSessionException e) {
+                e.printStackTrace();
+            }
+        }
     }
+
+    @CacheEntryRemoved
+    public void observeRemoved(CacheEntryRemovedEvent<SessionId<? extends Serializable>, PicketBoxSession> event) {
+        PicketBoxSession session = event.getValue();
+
+        if (session != null && session.isValid()) {
+            try {
+                session.invalidate(false);
+            } catch (PicketBoxSessionException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 }

@@ -25,6 +25,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.junit.Test;
 import org.picketbox.core.session.PicketBoxSession;
 import org.picketbox.core.session.PicketBoxSessionManager;
