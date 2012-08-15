@@ -22,6 +22,8 @@
 package org.picketbox.infinispan.session;
 
 import org.infinispan.Cache;
+import org.picketbox.core.exceptions.PicketBoxSessionException;
+import org.picketbox.core.session.DefaultSessionId;
 import org.picketbox.core.session.PicketBoxSession;
 
 /**
@@ -37,7 +39,7 @@ public class PicketBoxInfinispanSession extends PicketBoxSession {
     protected Cache<Object, Object> cache = null;
 
     protected PicketBoxInfinispanSession() {
-        super();
+        super(new DefaultSessionId());
     }
 
     /**
@@ -51,7 +53,7 @@ public class PicketBoxInfinispanSession extends PicketBoxSession {
     }
 
     @Override
-    public void invalidate() {
+    public void invalidate() throws PicketBoxSessionException {
         super.invalidate();
         cache.evict(id);
     }
