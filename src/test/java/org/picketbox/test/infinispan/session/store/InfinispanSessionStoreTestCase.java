@@ -52,7 +52,7 @@ import org.picketbox.infinispan.session.store.InfinispanSessionStore;
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  * 
  */
-public class DistributableSessionStoreTestCase {
+public class InfinispanSessionStoreTestCase {
 
     private static DefaultPicketBoxManager firstPicketBoxManager;
     private static DefaultPicketBoxManager secondPicketBoxManager;
