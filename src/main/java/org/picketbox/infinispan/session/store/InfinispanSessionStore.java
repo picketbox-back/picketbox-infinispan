@@ -33,39 +33,69 @@ import org.picketbox.core.session.SessionStore;
 import org.picketbox.infinispan.session.CacheListener;
 
 /**
- * <p>Custom {@link SessionStore} implementation using Infinispan to store {@link PicketBoxSession} instances.</p>
- * <p>The Infinispan configuration must defined a namedCache called <b>picketbox-session-cache</b>.</p>
+ * <p>
+ * Custom {@link SessionStore} implementation using Infinispan to store {@link PicketBoxSession} instances.
+ * </p>
+ * <p>
+ * By default the Infinispan configuration file must exists in the classpath with name picketnlink-ispn.xml and define a
+ * namedCache called <b>picketbox-session-cache</b>, if the default constructor is used.
+ * </p>
+ * <p>
+ * To provide a different name for the configuration file or the internal cache name you can use one of the others constructors.
+ * </p>
  *
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  *
  */
-public class DistributableSessionStore extends AbstractPicketBoxLifeCycle implements SessionStore {
+public class InfinispanSessionStore extends AbstractPicketBoxLifeCycle implements SessionStore {
 
     private static final String DEFAULT_CONFIG_FILE = "picketbox-ispn.xml";
+    private static final String DEFAULT_CACHE_NAME = "picketbox-session-cache";
+
+    private String configurationFile = DEFAULT_CONFIG_FILE;
+    private String cacheName = DEFAULT_CACHE_NAME;
 
     private Cache<Serializable, PicketBoxSession> cache;
-    private String configurationFile = DEFAULT_CONFIG_FILE;
 
     private DefaultCacheManager cacheManager;
 
     /**
-     * <p>Creates a new instance using the default configuration file: picketbox-ispn.xml.</p>
+     * <p>
+     * Creates a new instance using the default configuration file: picketbox-ispn.xml.
+     * </p>
      */
-    public DistributableSessionStore() {
+    public InfinispanSessionStore() {
         this(DEFAULT_CONFIG_FILE);
     }
 
     /**
-     * <p>Creates a new instance using the specified configuration file.</p>
+     * <p>
+     * Creates a new instance using the default configuration file and the specified name for the configured cache. If no cache
+     * name is provided the default name will be used.
+     * </p>
+     */
+    public InfinispanSessionStore(String cacheName, String configurationFile) {
+        this(configurationFile);
+        if (this.cacheName != null) {
+            this.cacheName = cacheName;
+        }
+    }
+
+    /**
+     * <p>
+     * Creates a new instance using the specified configuration file.
+     * </p>
      *
      * @param configurationFile
      */
-    public DistributableSessionStore(String configurationFile) {
+    public InfinispanSessionStore(String configurationFile) {
         this.configurationFile = configurationFile;
     }
 
     /**
-     * <p>Loads the configuration and starts the {@link DefaultCacheManager}.</p>
+     * <p>
+     * Loads the configuration and starts the {@link DefaultCacheManager}.
+     * </p>
      *
      * @param configurationFile
      */
@@ -75,7 +105,7 @@ public class DistributableSessionStore extends AbstractPicketBoxLifeCycle implem
 
             cacheManager.start();
 
-            this.cache = cacheManager.getCache("picketbox-session-cache");
+            this.cache = cacheManager.getCache(this.cacheName);
 
             this.cache.addListener(new CacheListener());
         } catch (Exception e) {
@@ -83,7 +113,9 @@ public class DistributableSessionStore extends AbstractPicketBoxLifeCycle implem
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     *
      * @see org.picketbox.core.session.SessionStore#load(org.picketbox.core.session.SessionId)
      */
     @Override
@@ -91,7 +123,9 @@ public class DistributableSessionStore extends AbstractPicketBoxLifeCycle implem
         return this.cache.get(key.getId());
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     *
      * @see org.picketbox.core.session.SessionStore#store(org.picketbox.core.session.PicketBoxSession)
      */
     @Override
@@ -99,7 +133,9 @@ public class DistributableSessionStore extends AbstractPicketBoxLifeCycle implem
         this.cache.put(session.getId().getId(), session);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     *
      * @see org.picketbox.core.session.SessionStore#remove(org.picketbox.core.session.SessionId)
      */
     @Override
@@ -107,7 +143,9 @@ public class DistributableSessionStore extends AbstractPicketBoxLifeCycle implem
         this.cache.remove(id.getId());
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     *
      * @see org.picketbox.core.session.SessionStore#update(org.picketbox.core.session.PicketBoxSession)
      */
     @Override
