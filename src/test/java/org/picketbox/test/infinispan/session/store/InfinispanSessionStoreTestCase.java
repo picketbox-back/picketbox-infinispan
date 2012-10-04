@@ -42,17 +42,17 @@ import org.picketbox.core.config.PicketBoxConfiguration;
 import org.picketbox.core.exceptions.AuthenticationException;
 import org.picketbox.core.session.PicketBoxSession;
 import org.picketbox.core.session.SessionId;
-import org.picketbox.infinispan.session.store.DistributableSessionStore;
+import org.picketbox.infinispan.session.store.InfinispanSessionStore;
 
 /**
  * <p>
- * Tests the core functionality for the {@link DistributableSessionStore}.
+ * Tests the core functionality for the {@link InfinispanSessionStore}.
  * </p>
  * 
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  * 
  */
-public class DistributableSessionStoreTestCase {
+public class InfinispanSessionStoreTestCase {
 
     private static DefaultPicketBoxManager firstPicketBoxManager;
     private static DefaultPicketBoxManager secondPicketBoxManager;
@@ -223,7 +223,7 @@ public class DistributableSessionStoreTestCase {
 
         builder
             .sessionManager()
-                .store(new DistributableSessionStore())
+                .store(new InfinispanSessionStore())
                 .sessionTimeout(1);
 
         PicketBoxConfiguration configuration = builder.build();
