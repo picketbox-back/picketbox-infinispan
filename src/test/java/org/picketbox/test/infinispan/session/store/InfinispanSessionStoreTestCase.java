@@ -35,7 +35,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.picketbox.core.DefaultPicketBoxManager;
 import org.picketbox.core.PicketBoxManager;
-import org.picketbox.core.PicketBoxSubject;
+import org.picketbox.core.UserContext;
 import org.picketbox.core.authentication.credential.UsernamePasswordCredential;
 import org.picketbox.core.config.ConfigurationBuilder;
 import org.picketbox.core.config.PicketBoxConfiguration;
@@ -83,24 +83,24 @@ public class InfinispanSessionStoreTestCase {
      */
     @Test
     public void testSessionReplication() throws Exception {
-        PicketBoxSubject subject = new PicketBoxSubject();
+        UserContext subject = new UserContext();
 
         subject.setCredential(new UsernamePasswordCredential("admin", "admin"));
 
         // lets authenticated the subject and get its session to use later
-        PicketBoxSubject originalSubject = firstPicketBoxManager.authenticate(subject);
-        PicketBoxSession originalSession = originalSubject.getSession();
+        UserContext originalUserContext = firstPicketBoxManager.authenticate(subject);
+        PicketBoxSession originalSession = originalUserContext.getSession();
         SessionId<? extends Serializable> originalSessionId = originalSession.getId();
 
-        assertTrue(originalSubject.isAuthenticated());
+        assertTrue(originalUserContext.isAuthenticated());
 
         // lets try to authenticate the subject using the id from the previous session
-        PicketBoxSubject sameSessionSubject = new PicketBoxSubject(originalSessionId);
-        PicketBoxSubject replicatedSubject = secondPicketBoxManager.authenticate(sameSessionSubject);
-        PicketBoxSession replicatedSession = replicatedSubject.getSession();
+        UserContext sameSessionUserContext = new UserContext(originalSessionId);
+        UserContext replicatedUserContext = secondPicketBoxManager.authenticate(sameSessionUserContext);
+        PicketBoxSession replicatedSession = replicatedUserContext.getSession();
         
         // user was automatically authenticated
-        assertTrue(replicatedSubject.isAuthenticated());
+        assertTrue(replicatedUserContext.isAuthenticated());
         
         // the replicated session is valid
         assertTrue(replicatedSession.isValid());
@@ -121,25 +121,25 @@ public class InfinispanSessionStoreTestCase {
      */
     @Test
     public void testSessionAttributeReplication() throws Exception {
-        PicketBoxSubject authenticatingSubject = new PicketBoxSubject();
+        UserContext authenticatingUserContext = new UserContext();
 
-        authenticatingSubject.setCredential(new UsernamePasswordCredential("admin", "admin"));
+        authenticatingUserContext.setCredential(new UsernamePasswordCredential("admin", "admin"));
 
         // lets authenticated the subject and get its session to use later
-        PicketBoxSubject authenticatedSubject = firstPicketBoxManager.authenticate(authenticatingSubject);
-        PicketBoxSession originalSession = authenticatedSubject.getSession();
+        UserContext authenticatedUserContext = firstPicketBoxManager.authenticate(authenticatingUserContext);
+        PicketBoxSession originalSession = authenticatedUserContext.getSession();
         SessionId<? extends Serializable> originalSessionId = originalSession.getId();
 
-        assertTrue(authenticatedSubject.isAuthenticated());
+        assertTrue(authenticatedUserContext.isAuthenticated());
 
         // lets try to authenticate the subject using the id from the previous session
-        PicketBoxSubject sameSessionSubject = new PicketBoxSubject(originalSessionId);
-        PicketBoxSubject replicatedSubject = secondPicketBoxManager.authenticate(sameSessionSubject);
+        UserContext sameSessionUserContext = new UserContext(originalSessionId);
+        UserContext replicatedUserContext = secondPicketBoxManager.authenticate(sameSessionUserContext);
 
-        assertTrue(replicatedSubject.isAuthenticated());
+        assertTrue(replicatedUserContext.isAuthenticated());
 
         // lets replicate the attributes
-        PicketBoxSession replicatedSession = replicatedSubject.getSession();
+        PicketBoxSession replicatedSession = replicatedUserContext.getSession();
 
         // sets a new attribute in the replicated session. The attribute should be replicated to the original session.
         replicatedSession.setAttribute("attributeA", "attributeA");
@@ -164,27 +164,27 @@ public class InfinispanSessionStoreTestCase {
      */
     @Test(expected = AuthenticationException.class)
     public void testSessionInvalidation() throws Exception {
-        PicketBoxSubject authenticatingSubject = new PicketBoxSubject();
+        UserContext authenticatingUserContext = new UserContext();
 
-        authenticatingSubject.setCredential(new UsernamePasswordCredential("admin", "admin"));
+        authenticatingUserContext.setCredential(new UsernamePasswordCredential("admin", "admin"));
 
-        PicketBoxSubject authenticatedSubject = firstPicketBoxManager.authenticate(authenticatingSubject);
-        PicketBoxSession originalSession = authenticatedSubject.getSession();
+        UserContext authenticatedUserContext = firstPicketBoxManager.authenticate(authenticatingUserContext);
+        PicketBoxSession originalSession = authenticatedUserContext.getSession();
         SessionId<? extends Serializable> originalSessionId = originalSession.getId();
 
-        PicketBoxSubject sameSessionSubject = new PicketBoxSubject(originalSessionId);
-        PicketBoxSubject replicatedSubject = secondPicketBoxManager.authenticate(sameSessionSubject);
+        UserContext sameSessionUserContext = new UserContext(originalSessionId);
+        UserContext replicatedUserContext = secondPicketBoxManager.authenticate(sameSessionUserContext);
 
         // user logout. now the session should be invalidated and removed from the cache.
-        firstPicketBoxManager.logout(authenticatedSubject);
+        firstPicketBoxManager.logout(authenticatedUserContext);
 
-        assertFalse(replicatedSubject.isAuthenticated());
+        assertFalse(replicatedUserContext.isAuthenticated());
 
         // lets try to authenticated again with the previous session id.
-        PicketBoxSubject invalidSessionSubject = new PicketBoxSubject(originalSessionId);
+        UserContext invalidSessionUserContext = new UserContext(originalSessionId);
 
         // an exception should be raised because the session id is no more valid.
-        secondPicketBoxManager.authenticate(invalidSessionSubject);
+        secondPicketBoxManager.authenticate(invalidSessionUserContext);
     }
     
     /**
@@ -196,26 +196,26 @@ public class InfinispanSessionStoreTestCase {
      */
     @Test(expected = AuthenticationException.class)
     public void testSessionExpiration() throws Exception {
-        PicketBoxSubject authenticatingSubject = new PicketBoxSubject();
+        UserContext authenticatingUserContext = new UserContext();
 
-        authenticatingSubject.setCredential(new UsernamePasswordCredential("admin", "admin"));
+        authenticatingUserContext.setCredential(new UsernamePasswordCredential("admin", "admin"));
 
-        PicketBoxSubject authenticatedSubject = firstPicketBoxManager.authenticate(authenticatingSubject);
-        PicketBoxSession originalSession = authenticatedSubject.getSession();
+        UserContext authenticatedUserContext = firstPicketBoxManager.authenticate(authenticatingUserContext);
+        PicketBoxSession originalSession = authenticatedUserContext.getSession();
         SessionId<? extends Serializable> originalSessionId = originalSession.getId();
 
-        PicketBoxSubject sameSessionSubject = new PicketBoxSubject(originalSessionId);
-        PicketBoxSubject replicatedSubject = secondPicketBoxManager.authenticate(sameSessionSubject);
+        UserContext sameSessionUserContext = new UserContext(originalSessionId);
+        UserContext replicatedUserContext = secondPicketBoxManager.authenticate(sameSessionUserContext);
 
-        assertTrue(replicatedSubject.isAuthenticated());
+        assertTrue(replicatedUserContext.isAuthenticated());
         
         // expiration was configure to 1 minute. Let's wait ...
         Thread.sleep(65000);
         
         // the original session must be expired, lets try to authenticated again with an invalid session id
-        PicketBoxSubject invalidSessionSubject = new PicketBoxSubject(originalSessionId);
+        UserContext invalidSessionUserContext = new UserContext(originalSessionId);
 
-        secondPicketBoxManager.authenticate(invalidSessionSubject);
+        secondPicketBoxManager.authenticate(invalidSessionUserContext);
     }
 
     private static DefaultPicketBoxManager createPicketBoxManager() {
