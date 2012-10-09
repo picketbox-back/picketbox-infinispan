@@ -43,6 +43,8 @@ import org.picketbox.core.exceptions.AuthenticationException;
 import org.picketbox.core.session.PicketBoxSession;
 import org.picketbox.core.session.SessionId;
 import org.picketbox.infinispan.session.store.InfinispanSessionStore;
+import org.picketlink.idm.IdentityManager;
+import org.picketlink.idm.model.User;
 
 /**
  * <p>
@@ -201,6 +203,10 @@ public class InfinispanSessionStoreTestCase {
         authenticatingUserContext.setCredential(new UsernamePasswordCredential("admin", "admin"));
 
         UserContext authenticatedUserContext = firstPicketBoxManager.authenticate(authenticatingUserContext);
+        
+        assertNotNull(authenticatedUserContext);
+        assertTrue(authenticatedUserContext.isAuthenticated());
+        
         PicketBoxSession originalSession = authenticatedUserContext.getSession();
         SessionId<? extends Serializable> originalSessionId = originalSession.getId();
 
@@ -227,11 +233,17 @@ public class InfinispanSessionStoreTestCase {
                 .sessionTimeout(1);
 
         PicketBoxConfiguration configuration = builder.build();
-
+        
         DefaultPicketBoxManager picketBoxManager = new DefaultPicketBoxManager(configuration);
 
         picketBoxManager.start();
 
+        IdentityManager identityManager = picketBoxManager.getIdentityManager();
+        
+        User user = identityManager.createUser("admin");
+        
+        identityManager.updatePassword(user, "admin");
+        
         return picketBoxManager;
     }
 
